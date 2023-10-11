@@ -1,0 +1,19 @@
+CREATE PROCEDURE sp_StokEkstresi
+@MalKodu nvarchar(MAX),
+@BaslangicTarihi int,
+@BitisTarihi int
+
+AS
+BEGIN
+SELECT ROW_NUMBER() OVER(ORDER BY sti.Tarih) as SiraNo, sti.EvrakNo, 
+CONVERT(VARCHAR(15), CAST(sti.Tarih - 2 AS datetime) , 104) as Tarih,
+ IIF(sti.IslemTur = 0, 'Giriş', 'Çıkış') as IslemTur,
+  IIF(sti.IslemTur = 0, sti.Miktar, 0) as GirisMiktar,
+  IIF(sti.IslemTur = 1, sti.Miktar, 0) as CikisMiktar,
+sti.Miktar as StokMiktar
+FROM [Test].[dbo].[STI] AS sti 
+INNER JOIN [Test].[dbo].[STK] as stk 
+ON stk.MalKodu= sti.MalKodu
+WHERE sti.Tarih >= @BaslangicTarihi and sti.Tarih <= @BitisTarihi
+and sti.MalKodu = @MalKodu
+end
